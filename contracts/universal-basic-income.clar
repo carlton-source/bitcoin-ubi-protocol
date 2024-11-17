@@ -114,3 +114,21 @@
     (var-set treasury-balance (+ (var-get treasury-balance) amount))
     (ok amount))
 )
+
+;; Governance Functions
+(define-public (submit-proposal (proposal-type (string-ascii 32)) (proposed-value uint))
+    (let (
+        (proposal-id (+ (var-get total-participants) u1))
+    )
+    (asserts! (is-some (map-get? participants tx-sender)) err-not-registered)
+    (map-set governance-proposals proposal-id {
+        proposer: tx-sender,
+        proposal-type: proposal-type,
+        proposed-value: proposed-value,
+        votes-for: u0,
+        votes-against: u0,
+        status: "active",
+        expiry-height: (+ block-height u1440)
+    })
+    (ok proposal-id))
+)
