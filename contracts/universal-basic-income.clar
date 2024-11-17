@@ -34,3 +34,8 @@
         claims-count: uint
     }
 )
+
+(define-map voter-records
+    {proposal-id: uint, voter: principal}
+    bool
+)
