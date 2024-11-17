@@ -12,8 +12,12 @@
 (define-constant err-insufficient-funds (err u105))
 (define-constant err-invalid-amount (err u106))
 (define-constant err-unauthorized (err u107))
+(define-constant err-invalid-proposal (err u108))
+(define-constant err-expired-proposal (err u109))
+(define-constant err-invalid-value (err u110))
 (define-constant distribution-interval u144) ;; ~1 day in blocks
 (define-constant minimum-balance u10000000) ;; Minimum treasury balance
+(define-constant max-proposed-value u1000000000000) ;; Maximum value for proposals
 
 ;; Data Variables
 (define-data-var treasury-balance uint u0)
@@ -21,6 +25,7 @@
 (define-data-var distribution-amount uint u1000000) ;; 1 STX = 1000000 microSTX
 (define-data-var last-distribution-height uint u0)
 (define-data-var paused bool false)
+(define-data-var proposal-counter uint u0)
 
 ;; Data Maps
 (define-map participants 
@@ -77,6 +82,21 @@
                 claims-count: (+ (get claims-count current-info) u1)
             })))
         err-not-registered
+    )
+)
+
+(define-private (is-valid-proposal-type (proposal-type (string-ascii 32)))
+    (or 
+        (is-eq proposal-type "distribution-amount")
+        (is-eq proposal-type "distribution-interval")
+        (is-eq proposal-type "minimum-balance")
+    )
+)
+
+(define-private (is-valid-proposed-value (value uint))
+    (and 
+        (> value u0)
+        (<= value max-proposed-value)
     )
 )
 
@@ -137,10 +157,13 @@
 ;; Governance Functions
 (define-public (submit-proposal (proposal-type (string-ascii 32)) (proposed-value uint))
     (let (
-        (proposal-id (+ (var-get total-participants) u1))
+        (new-proposal-id (+ (var-get proposal-counter) u1))
     )
     (asserts! (is-some (map-get? participants tx-sender)) err-not-registered)
-    (map-set governance-proposals proposal-id {
+    (asserts! (is-valid-proposal-type proposal-type) err-invalid-proposal)
+    (asserts! (is-valid-proposed-value proposed-value) err-invalid-value)
+    
+    (map-set governance-proposals new-proposal-id {
         proposer: tx-sender,
         proposal-type: proposal-type,
         proposed-value: proposed-value,
@@ -149,7 +172,8 @@
         status: "active",
         expiry-height: (+ block-height u1440)
     })
-    (ok proposal-id))
+    (var-set proposal-counter new-proposal-id)
+    (ok new-proposal-id))
 )
 
 (define-public (vote (proposal-id uint) (vote-for bool))
@@ -159,6 +183,9 @@
     )
     (asserts! (is-some (map-get? participants tx-sender)) err-not-registered)
     (asserts! (is-none (map-get? voter-records voter-key)) err-already-registered)
+    (asserts! (<= proposal-id (var-get proposal-counter)) err-invalid-proposal)
+    (asserts! (< block-height (get expiry-height proposal)) err-expired-proposal)
+    (asserts! (is-eq (get status proposal) "active") err-invalid-proposal)
     
     (map-set voter-records voter-key true)
     (map-set governance-proposals proposal-id
