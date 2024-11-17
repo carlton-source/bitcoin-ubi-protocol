@@ -88,3 +88,19 @@
     (var-set total-participants (+ (var-get total-participants) u1))
     (ok true))
 )
+
+(define-public (claim-ubi)
+    (let (
+        (user tx-sender)
+        (can-claim (is-eligible user))
+    )
+    (asserts! (not (var-get paused)) err-unauthorized)
+    (asserts! can-claim err-ineligible)
+    (asserts! (>= (var-get treasury-balance) (var-get distribution-amount)) err-insufficient-funds)
+    
+    ;; Process claim
+    (try! (as-contract (stx-transfer? (var-get distribution-amount) contract-caller user)))
+    (var-set treasury-balance (- (var-get treasury-balance) (var-get distribution-amount)))
+    (try! (update-participant-record user (var-get distribution-amount)))
+    (ok (var-get distribution-amount)))
+)
