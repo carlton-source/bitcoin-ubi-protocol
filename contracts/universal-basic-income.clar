@@ -21,3 +21,16 @@
 (define-data-var last-distribution-height uint u0)
 (define-data-var minimum-balance uint u10000000) ;; Minimum treasury balance
 (define-data-var paused bool false)
+
+;; Data Maps
+(define-map participants 
+    principal 
+    {
+        registered: bool,
+        last-claim-height: uint,
+        total-claimed: uint,
+        verification-status: bool,
+        join-height: uint,
+        claims-count: uint
+    }
+)
