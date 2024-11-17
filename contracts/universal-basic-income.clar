@@ -44,3 +44,14 @@
 (define-private (is-contract-owner)
     (is-eq tx-sender contract-owner)
 )
+
+(define-private (is-eligible (user principal))
+    (let (
+        (participant-info (unwrap! (map-get? participants user) (err false)))
+    )
+    (and
+        (get verification-status participant-info)
+        (>= (- block-height (get last-claim-height participant-info)) distribution-interval)
+        (>= treasury-balance distribution-amount)
+    ))
+)
