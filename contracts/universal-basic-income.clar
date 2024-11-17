@@ -165,3 +165,8 @@
         (var-set paused false)
         (ok true))
 )
+
+;; Getter Functions
+(define-read-only (get-participant-info (user principal))
+    (map-get? participants user)
+)
