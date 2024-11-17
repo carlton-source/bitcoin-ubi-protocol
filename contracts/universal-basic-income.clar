@@ -132,3 +132,21 @@
     })
     (ok proposal-id))
 )
+
+(define-public (vote (proposal-id uint) (vote-for bool))
+    (let (
+        (proposal (unwrap! (map-get? governance-proposals proposal-id) err-not-registered))
+        (voter-key {proposal-id: proposal-id, voter: tx-sender})
+    )
+    (asserts! (is-some (map-get? participants tx-sender)) err-not-registered)
+    (asserts! (is-none (map-get? voter-records voter-key)) err-already-registered)
+    
+    (map-set voter-records voter-key true)
+    (map-set governance-proposals proposal-id
+        (merge proposal {
+            votes-for: (if vote-for (+ (get votes-for proposal) u1) (get votes-for proposal)),
+            votes-against: (if vote-for (get votes-against proposal) (+ (get votes-against proposal) u1))
+        })
+    )
+    (ok true))
+)
