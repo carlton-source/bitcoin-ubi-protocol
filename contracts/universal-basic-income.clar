@@ -12,3 +12,8 @@
 (define-constant err-insufficient-funds (err u105))
 (define-constant err-invalid-amount (err u106))
 (define-constant err-unauthorized (err u107))
+
+;; Data Variables
+(define-data-var treasury-balance uint u0)
+(define-data-var total-participants uint u0)
+(define-data-var distribution-amount uint u1000000) ;; 1 STX = 1000000
