@@ -39,3 +39,8 @@
     {proposal-id: uint, voter: principal}
     bool
 )
+
+;; Private Functions
+(define-private (is-contract-owner)
+    (is-eq tx-sender contract-owner)
+)
