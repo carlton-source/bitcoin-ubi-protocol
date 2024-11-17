@@ -104,3 +104,13 @@
     (try! (update-participant-record user (var-get distribution-amount)))
     (ok (var-get distribution-amount)))
 )
+
+(define-public (contribute)
+    (let (
+        (amount (stx-get-balance tx-sender))
+    )
+    (asserts! (> amount u0) err-invalid-amount)
+    (try! (stx-transfer? amount tx-sender (as-contract tx-sender)))
+    (var-set treasury-balance (+ (var-get treasury-balance) amount))
+    (ok amount))
+)
