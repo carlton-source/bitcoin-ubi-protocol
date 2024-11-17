@@ -170,3 +170,7 @@
 (define-read-only (get-participant-info (user principal))
     (map-get? participants user)
 )
+
+(define-read-only (get-treasury-balance)
+    (var-get treasury-balance)
+)
