@@ -70,3 +70,21 @@
         })
     ))
 )
+
+;; Public Functions
+(define-public (register)
+    (let (
+        (existing-record (map-get? participants tx-sender))
+    )
+    (asserts! (is-none existing-record) err-already-registered)
+    (map-set participants tx-sender {
+        registered: true,
+        last-claim-height: u0,
+        total-claimed: u0,
+        verification-status: false,
+        join-height: block-height,
+        claims-count: u0
+    })
+    (var-set total-participants (+ (var-get total-participants) u1))
+    (ok true))
+)
