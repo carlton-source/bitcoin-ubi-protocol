@@ -174,3 +174,7 @@
 (define-read-only (get-treasury-balance)
     (var-get treasury-balance)
 )
+
+(define-read-only (get-proposal (proposal-id uint))
+    (map-get? governance-proposals proposal-id)
+)
