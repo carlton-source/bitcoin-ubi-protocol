@@ -16,7 +16,7 @@
 ;; Data Variables
 (define-data-var treasury-balance uint u0)
 (define-data-var total-participants uint u0)
-(define-data-var distribution-amount uint u1000000) ;; 1 STX = 1000000
+(define-data-var distribution-amount uint u1000000) ;; 1 STX = 1000000 microSTX
 (define-data-var distribution-interval uint u144) ;; ~1 day in blocks
 (define-data-var last-distribution-height uint u0)
 (define-data-var minimum-balance uint u10000000) ;; Minimum treasury balance
@@ -32,6 +32,19 @@
         verification-status: bool,
         join-height: uint,
         claims-count: uint
+    }
+)
+
+(define-map governance-proposals
+    uint 
+    {
+        proposer: principal,
+        proposal-type: (string-ascii 32),
+        proposed-value: uint,
+        votes-for: uint,
+        votes-against: uint,
+        status: (string-ascii 10),
+        expiry-height: uint
     }
 )
 
@@ -87,6 +100,16 @@
     })
     (var-set total-participants (+ (var-get total-participants) u1))
     (ok true))
+)
+
+(define-public (verify-participant (user principal))
+    (begin
+        (asserts! (is-contract-owner) err-owner-only)
+        (asserts! (is-some (map-get? participants user)) err-not-registered)
+        (map-set participants user
+            (merge (unwrap! (map-get? participants user) err-not-registered)
+                  {verification-status: true}))
+        (ok true))
 )
 
 (define-public (claim-ubi)
@@ -177,4 +200,13 @@
 
 (define-read-only (get-proposal (proposal-id uint))
     (map-get? governance-proposals proposal-id)
+)
+
+(define-read-only (get-distribution-info)
+    {
+        amount: (var-get distribution-amount),
+        interval: (var-get distribution-interval),
+        last-height: (var-get last-distribution-height),
+        minimum-balance: (var-get minimum-balance)
+    }
 )
