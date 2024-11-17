@@ -17,3 +17,7 @@
 (define-data-var treasury-balance uint u0)
 (define-data-var total-participants uint u0)
 (define-data-var distribution-amount uint u1000000) ;; 1 STX = 1000000
+(define-data-var distribution-interval uint u144) ;; ~1 day in blocks
+(define-data-var last-distribution-height uint u0)
+(define-data-var minimum-balance uint u10000000) ;; Minimum treasury balance
+(define-data-var paused bool false)
