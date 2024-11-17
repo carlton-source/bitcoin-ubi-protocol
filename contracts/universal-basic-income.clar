@@ -150,3 +150,11 @@
     )
     (ok true))
 )
+
+;; Emergency Functions
+(define-public (pause)
+    (begin
+        (asserts! (is-contract-owner) err-owner-only)
+        (var-set paused true)
+        (ok true))
+)
