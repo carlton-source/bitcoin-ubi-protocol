@@ -158,3 +158,10 @@
         (var-set paused true)
         (ok true))
 )
+
+(define-public (unpause)
+    (begin
+        (asserts! (is-contract-owner) err-owner-only)
+        (var-set paused false)
+        (ok true))
+)
