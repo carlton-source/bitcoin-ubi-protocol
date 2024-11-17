@@ -55,3 +55,18 @@
         (>= treasury-balance distribution-amount)
     ))
 )
+
+(define-private (update-participant-record (user principal) (claimed-amount uint))
+    (let (
+        (current-info (unwrap! (map-get? participants user) (err false)))
+        (new-total (+ (get total-claimed current-info) claimed-amount))
+        (new-claims (+ (get claims-count current-info) u1))
+    )
+    (map-set participants user
+        (merge current-info {
+            last-claim-height: block-height,
+            total-claimed: new-total,
+            claims-count: new-claims
+        })
+    ))
+)
